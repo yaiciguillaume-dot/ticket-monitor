@@ -5,3 +5,5 @@ data/*.db-*
 local/check.log
 .DS_Store
 npm-debug.log*
+
+local/bot.log

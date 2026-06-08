@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.ticketmonitor.bot</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/gyaici/.local/bin/node</string>
+        <string>/Users/gyaici/ticket-monitor/src/bot.js</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/gyaici/ticket-monitor</string>
+
+    <!-- Toujours en ligne pour écouter tes commandes Telegram. -->
+    <key>KeepAlive</key>
+    <true/>
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/gyaici/ticket-monitor/local/bot.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/gyaici/ticket-monitor/local/bot.log</string>
+</dict>
+</plist>
