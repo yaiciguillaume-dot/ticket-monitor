@@ -1,0 +1,54 @@
+name: Ticket Monitor
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'   # toutes les 5 min (minimum autorisé par GitHub)
+  workflow_dispatch: {}      # bouton "Run workflow" pour tester à la main
+
+# Autorise le job à committer state.json
+permissions:
+  contents: write
+
+# Empêche deux runs de se chevaucher
+concurrency:
+  group: ticket-monitor
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci --omit=dev --ignore-scripts
+
+      - name: Installer Chromium (Playwright)
+        run: npx playwright install --with-deps chromium
+
+      - name: Vérifier les billetteries
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+        run: node src/check.js
+
+      - name: Sauvegarder l'état
+        if: always()
+        run: |
+          git config user.name "ticket-monitor[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state.json
+          git commit -m "état: maj $(date -u +%H:%M) [skip ci]" || echo "aucun changement"
+          git push || echo "rien à pousser"

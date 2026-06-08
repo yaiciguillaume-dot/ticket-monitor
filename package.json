@@ -6,6 +6,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
+    "check": "node src/check.js",
     "dev": "node --watch src/server.js",
     "postinstall": "playwright install chromium"
   },

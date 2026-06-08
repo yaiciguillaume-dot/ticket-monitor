@@ -1,0 +1,9 @@
+[
+  {
+    "name": "Exemple — duplique cette ligne et remplace l'URL",
+    "url": "https://exemple-billetterie.com/mon-evenement",
+    "keyword": "Épuisé",
+    "wait_selector": null,
+    "enabled": false
+  }
+]
