@@ -26,6 +26,7 @@ for (const t of targets) {
     url: t.url,
     keyword: (t.keyword || 'Épuisé').trim(),
     wait_selector: t.wait_selector || null,
+    click_text: t.click_text || null,
   };
 
   try {

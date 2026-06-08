@@ -25,12 +25,11 @@ const PRICE_RE = /\d+[.,]\d{2}\s*€/;
 
 const isPriceOnly = (l) => PRICE_RE.test(l) && l.replace(PRICE_RE, '').trim() === '';
 
-/** Nettoie un nom de catégorie : retire mot-clé, contrôles (+ − 0) et espaces multiples. */
+/** Nettoie un nom de catégorie : retire mot-clé, contrôles (+ −) et espaces multiples. */
 function cleanName(raw, keyword) {
   return raw
     .replace(new RegExp(keyword, 'ig'), '')
     .replace(/[−–—+]/g, ' ')
-    .replace(/\s+\d+\s*$/, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -54,9 +53,9 @@ function parseCategories(text, keyword) {
     const hasInlinePrice = PRICE_RE.test(line) && stripped.length > 0;
     const nextIsPrice = i + 1 < lines.length && isPriceOnly(lines[i + 1]);
 
-    if (hasInlinePrice && stripped.length >= 2 && stripped.length <= 80) {
+    if (hasInlinePrice && stripped.length >= 2 && stripped.length <= 80 && !NOISE_NAME.test(stripped)) {
       headers.push({ name: cleanName(stripped, keyword), index: i }); // nom + prix même ligne
-    } else if (nextIsPrice && !PRICE_RE.test(line) && line.length >= 2 && line.length <= 80) {
+    } else if (nextIsPrice && !PRICE_RE.test(line) && line.length >= 2 && line.length <= 80 && !NOISE_NAME.test(line)) {
       headers.push({ name: cleanName(line, keyword), index: i }); // nom suivi d'un prix isolé
     }
   }
@@ -70,24 +69,72 @@ function parseCategories(text, keyword) {
     const soldout = block.toLowerCase().includes(kw);
     categories.push({ name: headers[h].name, soldout, available: !soldout });
   }
-  return categories;
+  // Déduplique par nom (les widgets répètent parfois un libellé).
+  const seen = new Set();
+  return categories.filter((c) => {
+    const key = c.name.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
-const COOKIE_LABELS = ['accepter', 'tout accepter', 'accept', 'accept all', 'ok', "j'accepte"];
+// Lignes génériques internes au widget (sous-tarifs, placement…) → pas des catégories.
+const NOISE_NAME = /^(tarif\b|tarif normal|placement|auto|portes?\b|porte\b|choisir|choix|sélection|dès\b|à partir|from\b)/i;
 
-async function tryAcceptCookies(page) {
-  for (const label of COOKIE_LABELS) {
+// Sélecteurs de bouton "accepter les cookies" (CSS + texte). Didomi en premier (Ticketmaster).
+const COOKIE_SELECTORS = [
+  '#didomi-notice-agree-button',
+  'button#onetrust-accept-btn-handler',
+  'button:has-text("Tout accepter")',
+  'button:has-text("J\'accepte")',
+  'button:has-text("J’accepte")',
+  'button:has-text("Accepter")',
+  'button:has-text("Accept all")',
+];
+// Widgets cachés derrière un bouton/onglet à cliquer pour afficher les tarifs.
+const REVEAL_LABELS = ['choix rapide par tarif', 'choisissez vos places', 'voir les billets', 'acheter des billets'];
+
+async function tryClick(page, selector, timeout = 1500) {
+  try {
+    const loc = page.locator(selector).first();
+    if (await loc.isVisible({ timeout })) {
+      await loc.click({ timeout: 2500 });
+      return true;
+    }
+  } catch {
+    /* ignore */
+  }
+  return false;
+}
+
+async function acceptCookies(page) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    for (const sel of COOKIE_SELECTORS) {
+      if (await tryClick(page, sel, 1200)) {
+        await page.waitForTimeout(700);
+        return true;
+      }
+    }
+    await page.waitForTimeout(1000);
+  }
+  return false;
+}
+
+async function revealTariffs(page, extraLabel) {
+  const labels = extraLabel ? [extraLabel, ...REVEAL_LABELS] : REVEAL_LABELS;
+  for (const label of labels) {
     try {
-      const btn = page.getByRole('button', { name: new RegExp(label, 'i') }).first();
-      if (await btn.isVisible({ timeout: 800 })) {
-        await btn.click({ timeout: 1500 });
-        await page.waitForTimeout(400);
-        return;
+      const loc = page.getByText(new RegExp(label, 'i')).first();
+      if (await loc.isVisible({ timeout: 1500 })) {
+        await loc.click({ timeout: 2500 });
+        return label;
       }
     } catch {
       /* ignore */
     }
   }
+  return null;
 }
 
 /**
@@ -106,13 +153,21 @@ export async function scrape(target) {
   const page = await context.newPage();
   try {
     await page.goto(target.url, { waitUntil: 'domcontentloaded', timeout: 45000 });
-    await tryAcceptCookies(page);
+    await page.waitForTimeout(1500);
+
+    // 1) bandeau cookies (Didomi / OneTrust / générique)
+    await acceptCookies(page);
+    await page.waitForTimeout(800);
+
+    // 2) bouton/onglet qui révèle la grille de tarifs (Ticketmaster : "Choix rapide par tarif").
+    //    `click_text` permet de forcer un libellé précis par billetterie.
+    await revealTariffs(page, target.click_text);
 
     if (target.wait_selector) {
       await page.waitForSelector(target.wait_selector, { timeout: 15000 }).catch(() => {});
     } else {
       // laisse le widget JS se charger
-      await page.waitForTimeout(3500);
+      await page.waitForTimeout(4000);
     }
 
     const text = await page.evaluate(() => document.body.innerText || '');
