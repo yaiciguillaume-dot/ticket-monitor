@@ -1,0 +1,11 @@
+services:
+  ticket-monitor:
+    build: .
+    container_name: ticket-monitor
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data

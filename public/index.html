@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎟️ Ticket Monitor</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>🎟️ Ticket Monitor</h1>
+    <div class="status-pills">
+      <span id="conn" class="pill off">● hors-ligne</span>
+      <span id="tg" class="pill off">Telegram</span>
+      <span id="mail" class="pill off">Email</span>
+      <button id="testBtn" class="ghost">Tester les notifs</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="card add-card">
+      <h2>Ajouter une billetterie à surveiller</h2>
+      <form id="addForm">
+        <div class="row">
+          <input name="url" type="url" placeholder="https://…  (lien de la billetterie)" required />
+          <input name="name" type="text" placeholder="Nom (ex: Concert X — 12 juin)" />
+        </div>
+        <details>
+          <summary>Options avancées</summary>
+          <div class="row">
+            <label>Mot-clé « complet »
+              <input name="keyword" type="text" value="Épuisé" />
+            </label>
+            <label>Intervalle (s)
+              <input name="interval_sec" type="number" min="20" value="60" />
+            </label>
+            <label>Sélecteur à attendre (optionnel)
+              <input name="wait_selector" type="text" placeholder="ex: .ticket-list" />
+            </label>
+          </div>
+          <p class="hint">Une catégorie est « dispo » dès qu'elle n'affiche plus le mot-clé. Par défaut « Épuisé ».</p>
+        </details>
+        <button type="submit">+ Ajouter</button>
+      </form>
+    </section>
+
+    <section id="list"></section>
+
+    <section class="card">
+      <h2>Journal des événements</h2>
+      <ul id="events" class="events"></ul>
+    </section>
+  </main>
+
+  <audio id="alarm" preload="auto"
+    src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="></audio>
+  <script src="app.js"></script>
+</body>
+</html>
