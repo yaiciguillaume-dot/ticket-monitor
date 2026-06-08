@@ -1,1 +1,20 @@
-{}
+{
+  "https://www.ticketmaster.fr/fr/manifestation/doja-cat-billet/idmanif/636782": {
+    "name": "Doja Cat — Accor Arena (9 juin 2026)",
+    "available": [
+      "CATEGORIE OR",
+      "CATEGORIE 1",
+      "FOSSE",
+      "CATEGORIE 2"
+    ],
+    "soldout": [
+      "CARRE OR ALLEE",
+      "CATEGORIE 1 ALLEE",
+      "CATEGORIE 1 B ALLEE",
+      "CATEGORIE 2 ALLEE",
+      "CATEGORIE 3",
+      "CATEGORIE 4"
+    ],
+    "checked": "2026-06-08T20:06:23.837Z"
+  }
+}
