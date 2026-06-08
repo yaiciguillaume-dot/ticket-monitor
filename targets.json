@@ -1,9 +1,10 @@
 [
   {
-    "name": "Exemple — duplique cette ligne et remplace l'URL",
-    "url": "https://exemple-billetterie.com/mon-evenement",
+    "name": "Doja Cat — Accor Arena (9 juin 2026)",
+    "url": "https://www.ticketmaster.fr/fr/manifestation/doja-cat-billet/idmanif/636782",
     "keyword": "Épuisé",
+    "click_text": "Choix rapide par tarif",
     "wait_selector": null,
-    "enabled": false
+    "enabled": true
   }
 ]
