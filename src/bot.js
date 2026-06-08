@@ -149,7 +149,15 @@ async function handleAdd(chatId, arg) {
   if (baseline) {
     try {
       const state = readJson(STATE_FILE, {});
-      state[url] = { name, available: baseline.available, soldout: baseline.soldout, checked: new Date().toISOString() };
+      const cats = {};
+      for (const c of baseline.categories) cats[c.name] = c.available;
+      state[url] = {
+        name,
+        cats,
+        available: baseline.available,
+        soldout: baseline.soldout,
+        checked: new Date().toISOString(),
+      };
       writeFileSync(STATE_FILE, JSON.stringify(state, null, 2) + '\n');
     } catch {
       /* ignore */

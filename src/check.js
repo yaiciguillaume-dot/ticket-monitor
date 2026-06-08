@@ -37,8 +37,22 @@ for (const t of targets) {
       continue; // on garde l'état précédent, pas de fausse alerte
     }
 
-    const prev = state[target.url]?.available || [];
-    const newly = r.available.filter((c) => !prev.includes(c));
+    // État mémorisé par catégorie : { "CATEGORIE OR": true(=dispo)/false(=épuisé) }
+    const prevCats = state[target.url]?.cats || {};
+    const nowCats = {};
+    for (const c of r.categories) nowCats[c.name] = c.available;
+
+    // Fusion : on conserve l'historique des catégories momentanément absentes d'une
+    // lecture, on n'écrase qu'avec ce qu'on a réellement revu cette fois-ci.
+    const mergedCats = { ...prevCats, ...nowCats };
+
+    // Notif UNIQUEMENT si une catégorie connue ÉPUISÉE passe à DISPO ce tour-ci.
+    const newly = r.categories
+      .filter((c) => c.available && prevCats[c.name] === false)
+      .map((c) => c.name);
+
+    const available = Object.keys(mergedCats).filter((k) => mergedCats[k]);
+    const soldout = Object.keys(mergedCats).filter((k) => !mergedCats[k]);
 
     if (newly.length > 0) {
       console.log(`🎟️  DISPO — ${target.name} : ${newly.join(', ')}`);
@@ -49,13 +63,14 @@ for (const t of targets) {
         exitCode = 1;
       }
     } else {
-      console.log(`—  ${target.name} : ${r.available.length} dispo, rien de nouveau`);
+      console.log(`—  ${target.name} : ${available.length} dispo, rien de nouveau`);
     }
 
     state[target.url] = {
       name: target.name,
-      available: r.available,
-      soldout: r.soldout,
+      cats: mergedCats,
+      available,
+      soldout,
       checked: new Date().toISOString(),
     };
   } catch (err) {

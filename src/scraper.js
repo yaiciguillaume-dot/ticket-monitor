@@ -138,6 +138,32 @@ async function revealTariffs(page, extraLabel) {
 }
 
 /**
+ * Scrolle la page et relit le texte jusqu'à ce que le nombre de catégories
+ * détectées se stabilise — garantit que la liste complète est chargée avant lecture.
+ * Renvoie le texte final (celui avec le plus de catégories vu).
+ */
+async function waitForStableList(page, keyword) {
+  let bestText = '';
+  let bestCount = -1;
+  let stable = 0;
+  for (let i = 0; i < 18; i++) {
+    await page.evaluate(() => window.scrollBy(0, document.body.scrollHeight)).catch(() => {});
+    await page.waitForTimeout(700);
+    const text = await page.evaluate(() => document.body.innerText || '');
+    const count = parseCategories(text, keyword).length;
+    if (count >= bestCount) {
+      bestCount = count;
+      bestText = text;
+    }
+    // stable = même compte (>0) sur 3 lectures consécutives → liste complète
+    if (count === bestCount && count > 0) stable++;
+    else stable = 0;
+    if (stable >= 3) break;
+  }
+  return bestText;
+}
+
+/**
  * Visite l'URL, attend le rendu JS et renvoie l'état des catégories.
  * @returns {{ status, available: string[], soldout: string[], categories, text }}
  */
@@ -165,12 +191,14 @@ export async function scrape(target) {
 
     if (target.wait_selector) {
       await page.waitForSelector(target.wait_selector, { timeout: 15000 }).catch(() => {});
+      await page.waitForTimeout(2000);
     } else {
-      // laisse le widget JS se charger
-      await page.waitForTimeout(4000);
+      await page.waitForTimeout(2500);
     }
 
-    const text = await page.evaluate(() => document.body.innerText || '');
+    // 3) Attend que la LISTE COMPLÈTE soit chargée : on scrolle et on lit en boucle
+    //    jusqu'à ce que le nombre de catégories se stabilise (évite les lectures partielles).
+    const text = await waitForStableList(page, target.keyword);
     const categories = parseCategories(text, target.keyword);
     const available = categories.filter((c) => c.available).map((c) => c.name);
     const soldout = categories.filter((c) => c.soldout).map((c) => c.name);
@@ -184,6 +212,7 @@ export async function scrape(target) {
       available,
       soldout,
       categories,
+      text,
       error: categories.length === 0 ? 'Aucune catégorie détectée (page vide, bloquée ou mot-clé à ajuster).' : null,
     };
   } finally {
