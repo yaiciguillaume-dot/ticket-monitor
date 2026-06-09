@@ -7,3 +7,4 @@ local/check.log
 npm-debug.log*
 
 local/bot.log
+.check.lock

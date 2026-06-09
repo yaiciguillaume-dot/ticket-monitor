@@ -146,19 +146,19 @@ async function waitForStableList(page, keyword) {
   let bestText = '';
   let bestCount = -1;
   let stable = 0;
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < 10; i++) {
     await page.evaluate(() => window.scrollBy(0, document.body.scrollHeight)).catch(() => {});
-    await page.waitForTimeout(700);
+    await page.waitForTimeout(600);
     const text = await page.evaluate(() => document.body.innerText || '');
     const count = parseCategories(text, keyword).length;
-    if (count >= bestCount) {
-      bestCount = count;
+    if (count > bestCount || !bestText) {
+      bestCount = Math.max(bestCount, count);
       bestText = text;
     }
-    // stable = même compte (>0) sur 3 lectures consécutives → liste complète
-    if (count === bestCount && count > 0) stable++;
+    if (count === bestCount) stable++;
     else stable = 0;
-    if (stable >= 3) break;
+    if (count > 0 && stable >= 3) break; // contenu chargé et stable → fini
+    if (count === 0 && i >= 3) break; // toujours rien après 4 lectures → page sans tarifs (pas en vente)
   }
   return bestText;
 }

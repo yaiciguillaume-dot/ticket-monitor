@@ -1,6 +1,7 @@
 {
   "https://www.ticketmaster.fr/fr/manifestation/doja-cat-billet/idmanif/636782": {
     "name": "Doja Cat — Accor Arena (9 juin 2026)",
+    "status": "ok",
     "cats": {
       "CARRE OR ALLEE": false,
       "CATEGORIE 1 ALLEE": false,
@@ -27,6 +28,198 @@
       "CATEGORIE 3",
       "CATEGORIE 4"
     ],
-    "checked": "2026-06-08T20:58:31.660Z"
+    "checked": "2026-06-09T08:31:21.615Z"
+  },
+  "https://www.ticketmaster.fr/fr/manifestation/the-weeknd-after-hours-til-dawn-tour-billet/idmanif/634849": {
+    "name": "The Weeknd After Hours Til Dawn Tour",
+    "status": "ok",
+    "cats": {
+      "CARRE OR ALLEE": false,
+      "CARRE OR": false,
+      "TRIBUNE OFFICIELLE": false,
+      "TRIBUNE PRESIDENTIELLE": false,
+      "PELOUSE OR EST": false,
+      "PELOUSE OR OUEST": false,
+      "CATEGORIE 1 ALLEE": false,
+      "CATEGORIE 1": false,
+      "PELOUSE": false,
+      "CATEGORIE 2 ALLEE": false,
+      "CATEGORIE 2": false,
+      "CATEGORIE 2 COTE SCENE": false,
+      "CATEGORIE 3 ALLEE": false,
+      "CATEGORIE 3": false,
+      "CATEGORIE 3 COTE SCENE": false,
+      "CATEGORIE 4": false
+    },
+    "available": [],
+    "soldout": [
+      "CARRE OR ALLEE",
+      "CARRE OR",
+      "TRIBUNE OFFICIELLE",
+      "TRIBUNE PRESIDENTIELLE",
+      "PELOUSE OR EST",
+      "PELOUSE OR OUEST",
+      "CATEGORIE 1 ALLEE",
+      "CATEGORIE 1",
+      "PELOUSE",
+      "CATEGORIE 2 ALLEE",
+      "CATEGORIE 2",
+      "CATEGORIE 2 COTE SCENE",
+      "CATEGORIE 3 ALLEE",
+      "CATEGORIE 3",
+      "CATEGORIE 3 COTE SCENE",
+      "CATEGORIE 4"
+    ],
+    "checked": "2026-06-09T08:31:21.623Z"
+  },
+  "https://www.ticketmaster.fr/fr/manifestation/the-weeknd-after-hours-til-dawn-tour-billet/idmanif/634841": {
+    "name": "The Weeknd After Hours Til Dawn Tour",
+    "status": "ok",
+    "cats": {
+      "CARRE OR ALLEE": false,
+      "CARRE OR": false,
+      "TRIBUNE OFFICIELLE": false,
+      "TRIBUNE PRESIDENTIELLE": false,
+      "PELOUSE OR EST": false,
+      "PELOUSE OR OUEST": false,
+      "CATEGORIE 1 ALLEE": false,
+      "CATEGORIE 1": false,
+      "PELOUSE": false,
+      "CATEGORIE 2 ALLEE": false,
+      "CATEGORIE 2": false,
+      "CATEGORIE 2 COTE SCENE": false,
+      "CATEGORIE 3 ALLEE": false,
+      "CATEGORIE 3": false,
+      "CATEGORIE 3 COTE SCENE": false,
+      "CATEGORIE 4": false
+    },
+    "available": [],
+    "soldout": [
+      "CARRE OR ALLEE",
+      "CARRE OR",
+      "TRIBUNE OFFICIELLE",
+      "TRIBUNE PRESIDENTIELLE",
+      "PELOUSE OR EST",
+      "PELOUSE OR OUEST",
+      "CATEGORIE 1 ALLEE",
+      "CATEGORIE 1",
+      "PELOUSE",
+      "CATEGORIE 2 ALLEE",
+      "CATEGORIE 2",
+      "CATEGORIE 2 COTE SCENE",
+      "CATEGORIE 3 ALLEE",
+      "CATEGORIE 3",
+      "CATEGORIE 3 COTE SCENE",
+      "CATEGORIE 4"
+    ],
+    "checked": "2026-06-09T08:31:21.623Z"
+  },
+  "https://www.ticketmaster.fr/fr/manifestation/the-weeknd-after-hours-til-dawn-tour-billet/idmanif/634797": {
+    "name": "The Weeknd After Hours Til Dawn Tour",
+    "status": "ok",
+    "cats": {
+      "CARRE OR ALLEE": false,
+      "CARRE OR": false,
+      "TRIBUNE OFFICIELLE": false,
+      "TRIBUNE PRESIDENTIELLE": false,
+      "PELOUSE OR EST": false,
+      "PELOUSE OR OUEST": false,
+      "CATEGORIE 1 ALLEE": false,
+      "CATEGORIE 1": false,
+      "PELOUSE": false,
+      "CATEGORIE 2 ALLEE": false,
+      "CATEGORIE 2": false,
+      "CATEGORIE 2 COTE SCENE": false,
+      "CATEGORIE 3 ALLEE": false,
+      "CATEGORIE 3": false,
+      "CATEGORIE 3 COTE SCENE": false,
+      "CATEGORIE 4": false
+    },
+    "available": [],
+    "soldout": [
+      "CARRE OR ALLEE",
+      "CARRE OR",
+      "TRIBUNE OFFICIELLE",
+      "TRIBUNE PRESIDENTIELLE",
+      "PELOUSE OR EST",
+      "PELOUSE OR OUEST",
+      "CATEGORIE 1 ALLEE",
+      "CATEGORIE 1",
+      "PELOUSE",
+      "CATEGORIE 2 ALLEE",
+      "CATEGORIE 2",
+      "CATEGORIE 2 COTE SCENE",
+      "CATEGORIE 3 ALLEE",
+      "CATEGORIE 3",
+      "CATEGORIE 3 COTE SCENE",
+      "CATEGORIE 4"
+    ],
+    "checked": "2026-06-09T08:31:30.955Z"
+  },
+  "https://www.ticketmaster.fr/fr/manifestation/the-weeknd-after-hours-til-dawn-tour-billet/idmanif/637877": {
+    "name": "The Weeknd After Hours Til Dawn Tour",
+    "status": "ok",
+    "cats": {
+      "CARRE OR ALLEE": false,
+      "CARRE OR": false,
+      "TRIBUNE OFFICIELLE": false,
+      "TRIBUNE PRESIDENTIELLE": false,
+      "PELOUSE OR EST": false,
+      "PELOUSE OR OUEST": false,
+      "CATEGORIE 1 ALLEE": false,
+      "CATEGORIE 1": false,
+      "PELOUSE": false,
+      "CATEGORIE 2 ALLEE": false,
+      "CATEGORIE 2": false,
+      "CATEGORIE 2 COTE SCENE": false,
+      "CATEGORIE 3 ALLEE": false,
+      "CATEGORIE 3": false,
+      "CATEGORIE 3 COTE SCENE": false,
+      "CATEGORIE 4": false
+    },
+    "available": [],
+    "soldout": [
+      "CARRE OR ALLEE",
+      "CARRE OR",
+      "TRIBUNE OFFICIELLE",
+      "TRIBUNE PRESIDENTIELLE",
+      "PELOUSE OR EST",
+      "PELOUSE OR OUEST",
+      "CATEGORIE 1 ALLEE",
+      "CATEGORIE 1",
+      "PELOUSE",
+      "CATEGORIE 2 ALLEE",
+      "CATEGORIE 2",
+      "CATEGORIE 2 COTE SCENE",
+      "CATEGORIE 3 ALLEE",
+      "CATEGORIE 3",
+      "CATEGORIE 3 COTE SCENE",
+      "CATEGORIE 4"
+    ],
+    "checked": "2026-06-09T08:31:31.025Z"
+  },
+  "https://www.ticketmaster.fr/fr/manifestation/tom-misch-billet/idmanif/658904": {
+    "name": "Tom Misch",
+    "status": "ok",
+    "cats": {
+      "CATEGORIE UNIQUE": false
+    },
+    "available": [],
+    "soldout": [
+      "CATEGORIE UNIQUE"
+    ],
+    "checked": "2026-06-09T08:31:31.812Z"
+  },
+  "https://www.ticketmaster.fr/fr/manifestation/john-summit-billet/idmanif/661685": {
+    "name": "John Summit",
+    "status": "ok",
+    "cats": {
+      "CATEGORIE UNIQUE": false
+    },
+    "available": [],
+    "soldout": [
+      "CATEGORIE UNIQUE"
+    ],
+    "checked": "2026-06-09T08:31:39.751Z"
   }
 }
