@@ -5,7 +5,7 @@
     "cats": {
       "CARRE OR ALLEE": false,
       "CATEGORIE 1 ALLEE": false,
-      "CATEGORIE OR": true,
+      "CATEGORIE OR": false,
       "CATEGORIE 1 B ALLEE": false,
       "CATEGORIE 1": true,
       "CATEGORIE 2 ALLEE": false,
@@ -15,7 +15,6 @@
       "CATEGORIE 4": false
     },
     "available": [
-      "CATEGORIE OR",
       "CATEGORIE 1",
       "FOSSE",
       "CATEGORIE 2"
@@ -23,12 +22,13 @@
     "soldout": [
       "CARRE OR ALLEE",
       "CATEGORIE 1 ALLEE",
+      "CATEGORIE OR",
       "CATEGORIE 1 B ALLEE",
       "CATEGORIE 2 ALLEE",
       "CATEGORIE 3",
       "CATEGORIE 4"
     ],
-    "checked": "2026-06-09T08:31:21.615Z"
+    "checked": "2026-06-09T10:18:23.573Z"
   },
   "https://www.ticketmaster.fr/fr/manifestation/the-weeknd-after-hours-til-dawn-tour-billet/idmanif/634849": {
     "name": "The Weeknd After Hours Til Dawn Tour",
@@ -70,7 +70,7 @@
       "CATEGORIE 3 COTE SCENE",
       "CATEGORIE 4"
     ],
-    "checked": "2026-06-09T08:31:21.623Z"
+    "checked": "2026-06-09T10:18:23.579Z"
   },
   "https://www.ticketmaster.fr/fr/manifestation/the-weeknd-after-hours-til-dawn-tour-billet/idmanif/634841": {
     "name": "The Weeknd After Hours Til Dawn Tour",
@@ -112,11 +112,11 @@
       "CATEGORIE 3 COTE SCENE",
       "CATEGORIE 4"
     ],
-    "checked": "2026-06-09T08:31:21.623Z"
+    "checked": "2026-06-09T10:18:23.579Z"
   },
   "https://www.ticketmaster.fr/fr/manifestation/the-weeknd-after-hours-til-dawn-tour-billet/idmanif/634797": {
     "name": "The Weeknd After Hours Til Dawn Tour",
-    "status": "ok",
+    "status": "error",
     "cats": {
       "CARRE OR ALLEE": false,
       "CARRE OR": false,
@@ -154,11 +154,12 @@
       "CATEGORIE 3 COTE SCENE",
       "CATEGORIE 4"
     ],
-    "checked": "2026-06-09T08:31:30.955Z"
+    "checked": "2026-06-09T10:18:32.992Z",
+    "last_error": "Aucune catégorie détectée (page vide, bloquée ou mot-clé à ajuster)."
   },
   "https://www.ticketmaster.fr/fr/manifestation/the-weeknd-after-hours-til-dawn-tour-billet/idmanif/637877": {
     "name": "The Weeknd After Hours Til Dawn Tour",
-    "status": "ok",
+    "status": "error",
     "cats": {
       "CARRE OR ALLEE": false,
       "CARRE OR": false,
@@ -196,11 +197,12 @@
       "CATEGORIE 3 COTE SCENE",
       "CATEGORIE 4"
     ],
-    "checked": "2026-06-09T08:31:31.025Z"
+    "checked": "2026-06-09T10:18:33.057Z",
+    "last_error": "Aucune catégorie détectée (page vide, bloquée ou mot-clé à ajuster)."
   },
   "https://www.ticketmaster.fr/fr/manifestation/tom-misch-billet/idmanif/658904": {
     "name": "Tom Misch",
-    "status": "ok",
+    "status": "error",
     "cats": {
       "CATEGORIE UNIQUE": false
     },
@@ -208,11 +210,12 @@
     "soldout": [
       "CATEGORIE UNIQUE"
     ],
-    "checked": "2026-06-09T08:31:31.812Z"
+    "checked": "2026-06-09T10:18:33.224Z",
+    "last_error": "Aucune catégorie détectée (page vide, bloquée ou mot-clé à ajuster)."
   },
   "https://www.ticketmaster.fr/fr/manifestation/john-summit-billet/idmanif/661685": {
     "name": "John Summit",
-    "status": "ok",
+    "status": "error",
     "cats": {
       "CATEGORIE UNIQUE": false
     },
@@ -220,6 +223,7 @@
     "soldout": [
       "CATEGORIE UNIQUE"
     ],
-    "checked": "2026-06-09T08:31:39.751Z"
+    "checked": "2026-06-09T10:18:43.540Z",
+    "last_error": "Aucune catégorie détectée (page vide, bloquée ou mot-clé à ajuster)."
   }
 }

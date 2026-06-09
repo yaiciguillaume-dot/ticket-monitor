@@ -2,8 +2,16 @@ import 'dotenv/config';
 import { readFileSync, writeFileSync, existsSync, statSync, rmSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { execFile } from 'child_process';
 import { scrape, closeBrowser } from './scraper.js';
 import { notifyAvailable } from './notifier.js';
+
+// Ouvre la page d'achat dans le navigateur du Mac (option 2+).
+const AUTO_OPEN = String(process.env.AUTO_OPEN_BROWSER ?? 'true') === 'true';
+function openInBrowser(url) {
+  if (!AUTO_OPEN) return;
+  execFile('open', [url], (e) => e && console.error('   ↳ open navigateur :', e.message));
+}
 
 /**
  * Vérifie toutes les billetteries de targets.json, compare à state.json,
@@ -70,6 +78,7 @@ async function checkOne(t) {
 
     if (newly.length > 0) {
       console.log(`🎟️  DISPO — ${target.name} : ${newly.join(', ')}`);
+      openInBrowser(target.url); // ouvre la page d'achat sur le Mac
       try {
         await notifyAvailable(target, newly);
       } catch (err) {
