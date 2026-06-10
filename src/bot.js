@@ -216,10 +216,46 @@ async function handleUpdate(u) {
   }
 }
 
+// ── Heartbeat : alerte si la surveillance s'est arrêtée (Mac endormi/débranché/crash) ──
+const STALE_MIN = 10;
+let stalled = false;
+function newestCheck() {
+  try {
+    const s = readJson(STATE_FILE, {});
+    let max = 0;
+    for (const v of Object.values(s)) {
+      const t = Date.parse(v.checked || 0);
+      if (t > max) max = t;
+    }
+    return max;
+  } catch {
+    return 0;
+  }
+}
+async function heartbeat() {
+  const max = newestCheck();
+  if (!max) return;
+  const ageMin = (Date.now() - max) / 60000;
+  if (ageMin > STALE_MIN && !stalled) {
+    stalled = true;
+    await send(
+      ALLOWED,
+      `⚠️ <b>Surveillance en pause</b>\nDernière vérification il y a ${Math.round(ageMin)} min.\n` +
+        `Ton Mac est probablement endormi ou débranché → rebranche-le / garde-le ouvert pour reprendre.`
+    );
+  } else if (ageMin <= STALE_MIN && stalled) {
+    stalled = false;
+    await send(ALLOWED, '✅ <b>Surveillance reprise</b> — tout est de nouveau actif.');
+  }
+}
+
 async function main() {
   console.log('🤖 Bot Telegram démarré.');
   // message de démarrage + clavier de commandes
   if (ALLOWED) await send(ALLOWED, '🤖 Bot en ligne. Tape /status pour voir tes spectacles, ou /help.', MENU);
+
+  // Vérifie l'état de la surveillance toutes les 3 min.
+  if (ALLOWED) setInterval(() => heartbeat().catch(() => {}), 3 * 60 * 1000);
 
   let offset = 0;
   while (true) {
