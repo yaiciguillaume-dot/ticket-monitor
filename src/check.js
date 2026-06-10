@@ -25,17 +25,39 @@ const TARGETS_FILE = join(root, 'targets.json');
 const STATE_FILE = join(root, 'state.json');
 const LOCK_FILE = join(root, '.check.lock');
 const CONCURRENCY = 3;
+const PER_TARGET_TIMEOUT = 75000; // un scrape ne peut pas dépasser 75 s
+const GLOBAL_TIMEOUT = 180000; // un tour entier ne peut pas dépasser 3 min
 
 // ── Verrou : si un check tourne déjà (et n'est pas bloqué), on saute ce tour ──
 if (existsSync(LOCK_FILE)) {
   const ageMin = (Date.now() - statSync(LOCK_FILE).mtimeMs) / 60000;
-  if (ageMin < 8) {
+  if (ageMin < 4) {
     console.log(`⏭️  Un check est déjà en cours (${ageMin.toFixed(1)} min), on saute.`);
     process.exit(0);
   }
   console.log('⚠️  Verrou périmé, on relance.');
 }
 writeFileSync(LOCK_FILE, String(process.pid));
+
+// ── Watchdog : si tout le tour dépasse GLOBAL_TIMEOUT, on sort de force ──
+// (empêche un process figé après une mise en veille de bloquer launchd à l'infini)
+const watchdog = setTimeout(async () => {
+  console.error('⏰ Watchdog : tour trop long, sortie forcée.');
+  try {
+    rmSync(LOCK_FILE, { force: true });
+    await Promise.race([closeBrowser(), new Promise((r) => setTimeout(r, 5000))]);
+  } catch {
+    /* ignore */
+  }
+  process.exit(1);
+}, GLOBAL_TIMEOUT);
+watchdog.unref();
+
+const withTimeout = (promise, ms, label) =>
+  Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`timeout ${label} (${ms / 1000}s)`)), ms)),
+  ]);
 
 const targets = JSON.parse(readFileSync(TARGETS_FILE, 'utf8'));
 const state = existsSync(STATE_FILE) ? JSON.parse(readFileSync(STATE_FILE, 'utf8')) : {};
@@ -54,7 +76,7 @@ async function checkOne(t) {
   const prev = state[target.url] || {};
 
   try {
-    const r = await scrape(target);
+    const r = await withTimeout(scrape(target), PER_TARGET_TIMEOUT, target.name);
 
     if (r.status === 'error') {
       console.log(`⚠️  ${target.name} — ${r.error}`);
@@ -110,7 +132,8 @@ try {
   await runPool(targets, CONCURRENCY, checkOne);
   writeFileSync(STATE_FILE, JSON.stringify(state, null, 2) + '\n');
 } finally {
-  await closeBrowser().catch(() => {});
+  clearTimeout(watchdog);
+  await Promise.race([closeBrowser(), new Promise((r) => setTimeout(r, 8000))]).catch(() => {});
   rmSync(LOCK_FILE, { force: true });
 }
 process.exit(exitCode);
