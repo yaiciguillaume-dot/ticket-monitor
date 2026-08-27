@@ -137,6 +137,75 @@ async function revealTariffs(page, extraLabel) {
   return null;
 }
 
+// Sélecteurs des deux structures Ticketmaster (interface 2026).
+const SEL_GRID = 'li.session-price-item'; // page séance : grille tarifaire
+const SEL_SESSIONS = 'li.event-sessions-item'; // page manifestation : choix de la séance
+
+/**
+ * Lecture DOM (fiable) : renvoie les catégories/séances, ou null si la page
+ * n'utilise aucune des structures connues (→ on retombe sur l'analyse texte).
+ */
+async function extractFromDom(page) {
+  return page.evaluate(
+    ({ SEL_GRID, SEL_SESSIONS }) => {
+      const clean = (s) => (s || '').replace(/\s+/g, ' ').trim();
+      const soldRe = /épuis|complet|sold\s*out/i;
+
+      // A) Grille tarifaire (page séance) — signal fort : classe .is-sold-out
+      const grid = [...document.querySelectorAll(SEL_GRID)];
+      if (grid.length) {
+        const cats = grid
+          .map((li) => {
+            const cat = li.querySelector('.session-price-cat');
+            const name = clean(li.querySelector('.session-price-cat-title-txt')?.textContent);
+            if (!name) return null;
+            const status = clean(li.querySelector('.session-price-cat-title-status')?.textContent);
+            const soldout = !!(cat && cat.classList.contains('is-sold-out')) || soldRe.test(status);
+            return { name, soldout, available: !soldout };
+          })
+          .filter(Boolean);
+        if (cats.length) return { mode: 'grid', categories: cats };
+      }
+
+      // B) Sélecteur de séances (page manifestation) — signal : is-disabled / radio disabled
+      const sessions = [...document.querySelectorAll(SEL_SESSIONS)];
+      if (sessions.length) {
+        const cats = sessions
+          .map((li) => {
+            const name = clean(li.querySelector('.event-sessions-date')?.textContent);
+            if (!name) return null;
+            const status = clean(li.querySelector('.event-sessions-status')?.textContent);
+            const radio = li.querySelector('input.event-sessions-radio');
+            const soldout =
+              li.classList.contains('is-disabled') || !!(radio && radio.disabled) || soldRe.test(status);
+            return { name, soldout, available: !soldout };
+          })
+          .filter(Boolean);
+        if (cats.length) return { mode: 'sessions', categories: cats };
+      }
+
+      return null;
+    },
+    { SEL_GRID, SEL_SESSIONS }
+  );
+}
+
+/** Attend l'apparition d'une des structures connues (grille ou séances). */
+async function waitForTmStructure(page) {
+  for (let i = 0; i < 12; i++) {
+    const found = await page
+      .evaluate(
+        ({ a, b }) => document.querySelectorAll(a).length > 0 || document.querySelectorAll(b).length > 0,
+        { a: SEL_GRID, b: SEL_SESSIONS }
+      )
+      .catch(() => false);
+    if (found) return true;
+    await page.evaluate(() => window.scrollBy(0, 900)).catch(() => {});
+    await page.waitForTimeout(600);
+  }
+  return false;
+}
+
 /**
  * Scrolle la page et relit le texte jusqu'à ce que le nombre de catégories
  * détectées se stabilise — garantit que la liste complète est chargée avant lecture.
@@ -196,10 +265,24 @@ export async function scrape(target) {
       await page.waitForTimeout(2500);
     }
 
-    // 3) Attend que la LISTE COMPLÈTE soit chargée : on scrolle et on lit en boucle
-    //    jusqu'à ce que le nombre de catégories se stabilise (évite les lectures partielles).
-    const text = await waitForStableList(page, target.keyword);
-    const categories = parseCategories(text, target.keyword);
+    // 3) Lecture DOM en priorité (structures Ticketmaster : grille tarifaire ou
+    //    sélecteur de séances). Bien plus fiable que l'analyse du texte brut.
+    await waitForTmStructure(page);
+    const dom = await extractFromDom(page).catch(() => null);
+
+    let categories;
+    let mode;
+    let text = null;
+    if (dom && dom.categories.length) {
+      categories = dom.categories;
+      mode = dom.mode;
+    } else {
+      // 4) Repli générique (autres billetteries) : analyse du texte rendu.
+      text = await waitForStableList(page, target.keyword);
+      categories = parseCategories(text, target.keyword);
+      mode = 'text';
+    }
+
     const available = categories.filter((c) => c.available).map((c) => c.name);
     const soldout = categories.filter((c) => c.soldout).map((c) => c.name);
 
@@ -212,6 +295,7 @@ export async function scrape(target) {
       available,
       soldout,
       categories,
+      mode,
       text,
       error: categories.length === 0 ? 'Aucune catégorie détectée (page vide, bloquée ou mot-clé à ajuster).' : null,
     };

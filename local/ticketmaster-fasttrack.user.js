@@ -28,43 +28,70 @@
     }
   }
 
+  const hasStructure = () =>
+    !!document.querySelector('li.session-price-item') || !!document.querySelector('li.event-sessions-item');
+
   async function openGrid() {
     for (let i = 0; i < 20; i++) {
-      if (document.querySelector('ul.session-price-list')) return true; // déjà ouverte
+      if (hasStructure()) return true; // grille ou sélecteur de séances présent
       const el = findByText(/choix rapide par tarif/i);
       if (el) el.click();
       await sleep(500);
     }
-    return !!document.querySelector('ul.session-price-list');
+    return hasStructure();
+  }
+
+  const SOLD_RE = /épuis|complet|sold\s*out/i;
+
+  function flag(container, labelEl) {
+    container.style.outline = '3px solid #22c55e';
+    container.style.outlineOffset = '2px';
+    container.style.borderRadius = '6px';
+    if (labelEl && !labelEl.dataset.tmFlag) {
+      const badge = document.createElement('span');
+      badge.textContent = '  ✅ DISPO';
+      badge.style.cssText = 'color:#16a34a;font-weight:800;';
+      labelEl.appendChild(badge);
+      labelEl.dataset.tmFlag = '1';
+    }
   }
 
   function markAvailable() {
-    const items = [...document.querySelectorAll('li.session-price-item')];
     let firstAvail = null;
     let nAvail = 0;
-    items.forEach((li) => {
-      const status = li.querySelector('.session-price-cat-title-status');
-      const soldout = status && /épuis/i.test(status.textContent || '');
+
+    // A) Grille tarifaire (page séance)
+    const grid = [...document.querySelectorAll('li.session-price-item')];
+    grid.forEach((li) => {
       const cat = li.querySelector('.session-price-cat');
       if (!cat) return;
+      const status = li.querySelector('.session-price-cat-title-status');
+      const soldout = cat.classList.contains('is-sold-out') || SOLD_RE.test(status?.textContent || '');
       if (soldout) {
         cat.style.opacity = '0.45';
       } else {
         nAvail++;
-        cat.style.outline = '3px solid #22c55e';
-        cat.style.outlineOffset = '2px';
-        cat.style.borderRadius = '6px';
-        const title = li.querySelector('.session-price-cat-title-txt');
-        if (title && !title.dataset.tmFlag) {
-          const badge = document.createElement('span');
-          badge.textContent = '  ✅ DISPO';
-          badge.style.cssText = 'color:#16a34a;font-weight:800;';
-          title.appendChild(badge);
-          title.dataset.tmFlag = '1';
-        }
+        flag(cat, li.querySelector('.session-price-cat-title-txt'));
         if (!firstAvail) firstAvail = li;
       }
     });
+
+    // B) Sélecteur de séances (page manifestation)
+    const sessions = [...document.querySelectorAll('li.event-sessions-item')];
+    sessions.forEach((li) => {
+      const status = li.querySelector('.event-sessions-status');
+      const radio = li.querySelector('input.event-sessions-radio');
+      const soldout =
+        li.classList.contains('is-disabled') || (radio && radio.disabled) || SOLD_RE.test(status?.textContent || '');
+      if (soldout) {
+        li.style.opacity = '0.45';
+      } else {
+        nAvail++;
+        flag(li, li.querySelector('.event-sessions-date'));
+        if (!firstAvail) firstAvail = li;
+      }
+    });
+
     if (firstAvail) firstAvail.scrollIntoView({ behavior: 'smooth', block: 'center' });
     showBanner(nAvail);
   }

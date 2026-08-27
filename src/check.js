@@ -88,7 +88,12 @@ async function checkOne(t) {
     const prevCats = prev.cats || {};
     const nowCats = {};
     for (const c of r.categories) nowCats[c.name] = c.available;
-    const mergedCats = { ...prevCats, ...nowCats };
+
+    // Lecture DOM (grid/sessions) = liste complète et fiable → elle fait autorité,
+    // on ne traîne pas d'anciennes entrées. En repli texte, on fusionne (lecture
+    // possiblement partielle).
+    const reliable = r.mode === 'grid' || r.mode === 'sessions';
+    const mergedCats = reliable ? nowCats : { ...prevCats, ...nowCats };
 
     // Notif UNIQUEMENT si une catégorie connue ÉPUISÉE repasse DISPO.
     const newly = r.categories
@@ -130,6 +135,9 @@ async function runPool(items, limit, worker) {
 
 try {
   await runPool(targets, CONCURRENCY, checkOne);
+  // Purge l'état des spectacles qui ne sont plus suivis.
+  const tracked = new Set(targets.map((t) => t.url));
+  for (const url of Object.keys(state)) if (!tracked.has(url)) delete state[url];
   writeFileSync(STATE_FILE, JSON.stringify(state, null, 2) + '\n');
 } finally {
   clearTimeout(watchdog);
