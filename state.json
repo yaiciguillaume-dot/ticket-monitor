@@ -1,7 +1,7 @@
 {
   "https://www.ticketmaster.fr/fr/manifestation/ryan-beatty-billet/idmanif/663060": {
     "name": "Ryan Beatty",
-    "status": "ok",
+    "status": "error",
     "cats": {
       "Mardi 3 novembre 2026 à 20:00": false
     },
@@ -9,11 +9,12 @@
     "soldout": [
       "Mardi 3 novembre 2026 à 20:00"
     ],
-    "checked": "2026-08-27T07:51:10.360Z"
+    "checked": "2026-09-14T09:00:04.191Z",
+    "last_error": "page.goto: net::ERR_CONNECTION_RESET at https://www.ticketmaster.fr/fr/manifestation/ryan-beatty-billet/idmanif/663060\nCall log:\n  - navigating to \"https://www.ticketmaster.fr/fr/manifestation/ryan-beatty-billet/idmanif/663060\", waiting until \"domcontentloaded\"\n"
   },
   "https://www.ticketmaster.fr/fr/manifestation/teddy-swims-billet/idmanif/668409/idseance/4388194": {
     "name": "Teddy Swims",
-    "status": "ok",
+    "status": "error",
     "cats": {
       "CARRE OR ALLEE": false,
       "CATEGORIE OR": false,
@@ -35,6 +36,42 @@
       "FOSSE",
       "CATEGORIE 3"
     ],
-    "checked": "2026-08-27T07:51:10.374Z"
+    "checked": "2026-09-14T09:00:06.286Z",
+    "last_error": "page.goto: net::ERR_CONNECTION_RESET at https://www.ticketmaster.fr/fr/manifestation/teddy-swims-billet/idmanif/668409/idseance/4388194\nCall log:\n  - navigating to \"https://www.ticketmaster.fr/fr/manifestation/teddy-swims-billet/idmanif/668409/idseance/4388194\", waiting until \"domcontentloaded\"\n"
+  },
+  "https://www.ticketmaster.fr/fr/manifestation/tyla-billet/idmanif/668812/idseance/4389572": {
+    "name": "Tyla",
+    "status": "error",
+    "cats": {
+      "Lundi 12 octobre 2026 à 20:00": false
+    },
+    "available": [],
+    "soldout": [
+      "Lundi 12 octobre 2026 à 20:00"
+    ],
+    "checked": "2026-09-14T09:00:06.287Z",
+    "last_error": "page.goto: net::ERR_CONNECTION_RESET at https://www.ticketmaster.fr/fr/manifestation/tyla-billet/idmanif/668812/idseance/4389572\nCall log:\n  - navigating to \"https://www.ticketmaster.fr/fr/manifestation/tyla-billet/idmanif/668812/idseance/4389572\", waiting until \"domcontentloaded\"\n"
+  },
+  "https://www.ticketmaster.fr/fr/manifestation/adela-billet/idmanif/670549": {
+    "name": "Adela",
+    "status": "error",
+    "cats": {
+      "Vendredi 22 janvier 2027 à 20:00": false
+    },
+    "available": [],
+    "soldout": [
+      "Vendredi 22 janvier 2027 à 20:00"
+    ],
+    "checked": "2026-09-14T09:00:09.484Z",
+    "last_error": "page.goto: net::ERR_CONNECTION_RESET at https://www.ticketmaster.fr/fr/manifestation/adela-billet/idmanif/670549\nCall log:\n  - navigating to \"https://www.ticketmaster.fr/fr/manifestation/adela-billet/idmanif/670549\", waiting until \"domcontentloaded\"\n"
+  },
+  "https://www.ticketmaster.fr/fr/manifestation/the-kehlani-world-tour-eu-uk-billet/idmanif/661290/idtier/18864121?utm_medium=affiliate&clickId=XM7yPSQ1TxycUscQth2TbxEZUkrxesxpkVBx180&irgwc=1&afsrc=1&utm_source=Songkick&utm_campaign=1234554&utm_content=1107977_7516": {
+    "name": "The Kehlani World Tour Eu Uk",
+    "status": "error",
+    "cats": {},
+    "available": [],
+    "soldout": [],
+    "checked": "2026-09-14T09:00:09.487Z",
+    "last_error": "page.goto: net::ERR_CONNECTION_RESET at https://www.ticketmaster.fr/fr/manifestation/the-kehlani-world-tour-eu-uk-billet/idmanif/661290/idtier/18864121?utm_medium=affiliate&clickId=XM7yPSQ1TxycUscQth2TbxEZUkrxesxpkVBx180&irgwc=1&afsrc=1&utm_source=Songkick&utm_campaign=1234554&utm_content=1107977_7516\nCall log:\n  - navigating to \"https://www.ticketmaster.fr/fr/manifestation/the-kehlani-world-tour-eu-uk-billet/idmanif/661290/idtier/18864121?utm_medium=affiliate&clickId=XM7yPSQ1TxycUscQth2TbxEZUkrxesxpkVBx180&irgwc=1&afsrc=1&utm_source=Songkick&utm_campaign=1234554&utm_content=1107977_7516\", waiting until \"domcontentloaded\"\n"
   }
 }

@@ -53,9 +53,10 @@ function parseCategories(text, keyword) {
     const hasInlinePrice = PRICE_RE.test(line) && stripped.length > 0;
     const nextIsPrice = i + 1 < lines.length && isPriceOnly(lines[i + 1]);
 
-    if (hasInlinePrice && stripped.length >= 2 && stripped.length <= 80 && !NOISE_NAME.test(stripped)) {
+    const isNoise = (s) => NOISE_NAME.test(s) || SHIPPING_NAME.test(s);
+    if (hasInlinePrice && stripped.length >= 2 && stripped.length <= 80 && !isNoise(stripped)) {
       headers.push({ name: cleanName(stripped, keyword), index: i }); // nom + prix même ligne
-    } else if (nextIsPrice && !PRICE_RE.test(line) && line.length >= 2 && line.length <= 80 && !NOISE_NAME.test(line)) {
+    } else if (nextIsPrice && !PRICE_RE.test(line) && line.length >= 2 && line.length <= 80 && !isNoise(line)) {
       headers.push({ name: cleanName(line, keyword), index: i }); // nom suivi d'un prix isolé
     }
   }
@@ -80,7 +81,12 @@ function parseCategories(text, keyword) {
 }
 
 // Lignes génériques internes au widget (sous-tarifs, placement…) → pas des catégories.
-const NOISE_NAME = /^(tarif\b|tarif normal|placement|auto|portes?\b|porte\b|choisir|choix|sélection|dès\b|à partir|from\b)/i;
+// Lignes internes au widget (sous-tarifs, placement…) ET options de livraison/retrait
+// (« Lettre Expert (7.90€) », « DHL Express (18.90€) », « E-Ticket »…) → jamais des catégories.
+const NOISE_NAME =
+  /^(tarif\b|tarif normal|placement|auto|portes?\b|porte\b|choisir|choix|sélection|dès\b|à partir|from\b)/i;
+const SHIPPING_NAME =
+  /lettre|dhl|colissimo|chronopost|ups\b|fedex|e-?ticket|m-?ticket|billet électronique|retrait|livraison|envoi|expédition|impression|print|jumelles|coffret|assurance|frais de/i;
 
 // Sélecteurs de bouton "accepter les cookies" (CSS + texte). Didomi en premier (Ticketmaster).
 const COOKIE_SELECTORS = [
@@ -273,11 +279,18 @@ export async function scrape(target) {
     let categories;
     let mode;
     let text = null;
+    const isTicketmaster = /ticketmaster\./i.test(target.url);
     if (dom && dom.categories.length) {
       categories = dom.categories;
       mode = dom.mode;
+    } else if (isTicketmaster) {
+      // Sur Ticketmaster la structure est connue : si elle est absente, c'est que la
+      // page n'est pas (encore) chargée. On NE tente PAS l'analyse texte, qui
+      // confondrait les options de livraison avec des catégories.
+      categories = [];
+      mode = 'none';
     } else {
-      // 4) Repli générique (autres billetteries) : analyse du texte rendu.
+      // 4) Repli générique (autres billetteries uniquement) : analyse du texte rendu.
       text = await waitForStableList(page, target.keyword);
       categories = parseCategories(text, target.keyword);
       mode = 'text';
@@ -297,7 +310,12 @@ export async function scrape(target) {
       categories,
       mode,
       text,
-      error: categories.length === 0 ? 'Aucune catégorie détectée (page vide, bloquée ou mot-clé à ajuster).' : null,
+      error:
+        categories.length === 0
+          ? mode === 'none'
+            ? 'Grille Ticketmaster non chargée (page lente, bloquée ou en file d’attente) — état conservé.'
+            : 'Aucune catégorie détectée (page vide, bloquée ou mot-clé à ajuster).'
+          : null,
     };
   } finally {
     await context.close();
