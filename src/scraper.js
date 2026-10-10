@@ -253,7 +253,7 @@ export async function scrape(target) {
   });
   const page = await context.newPage();
   try {
-    await page.goto(target.url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+    const resp = await page.goto(target.url, { waitUntil: 'domcontentloaded', timeout: 45000 });
     await page.waitForTimeout(1500);
 
     // 1) bandeau cookies (Didomi / OneTrust / générique)
@@ -273,6 +273,22 @@ export async function scrape(target) {
 
     // 3) Lecture DOM en priorité (structures Ticketmaster : grille tarifaire ou
     //    sélecteur de séances). Bien plus fiable que l'analyse du texte brut.
+    // Page de blocage anti-robot (« Erreur 403 ») : on le dit clairement au lieu
+    // de faire comme si la grille était juste lente.
+    const title = await page.title().catch(() => '');
+    if ((resp && resp.status() === 403) || /erreur 403|access denied|forbidden|pas l.autorisation/i.test(title)) {
+      return {
+        status: 'error',
+        blocked: true,
+        available: [],
+        soldout: [],
+        categories: [],
+        mode: 'blocked',
+        text: null,
+        error: 'Bloqué par Ticketmaster (erreur 403 anti-robot).',
+      };
+    }
+
     await waitForTmStructure(page);
     const dom = await extractFromDom(page).catch(() => null);
 

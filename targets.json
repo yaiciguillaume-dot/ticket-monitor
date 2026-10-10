@@ -8,14 +8,6 @@
     "enabled": true
   },
   {
-    "name": "Teddy Swims",
-    "url": "https://www.ticketmaster.fr/fr/manifestation/teddy-swims-billet/idmanif/668409/idseance/4388194",
-    "keyword": "Épuisé",
-    "click_text": "Choix rapide par tarif",
-    "wait_selector": null,
-    "enabled": true
-  },
-  {
     "name": "Tyla",
     "url": "https://www.ticketmaster.fr/fr/manifestation/tyla-billet/idmanif/668812/idseance/4389572",
     "keyword": "Épuisé",

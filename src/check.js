@@ -37,6 +37,17 @@ if (existsSync(LOCK_FILE)) {
   }
   console.log('⚠️  Verrou périmé, on relance.');
 }
+// ── Pause anti-blocage : si au tour précédent TOUT était bloqué (403), on espace
+//    les essais (insister aggrave le blocage). ──
+const BACKOFF_FILE = join(root, '.blocked_until');
+const BACKOFF_MIN = 15;
+if (existsSync(BACKOFF_FILE)) {
+  const until = Number(readFileSync(BACKOFF_FILE, 'utf8')) || 0;
+  if (Date.now() < until) {
+    console.log(`⏸️  Ticketmaster bloque l'accès, prochain essai à ${new Date(until).toLocaleTimeString('fr-FR')}.`);
+    process.exit(0);
+  }
+}
 writeFileSync(LOCK_FILE, String(process.pid));
 
 // ── Watchdog : si tout le tour dépasse GLOBAL_TIMEOUT, on sort de force ──
@@ -81,7 +92,7 @@ async function checkOne(t) {
     if (r.status === 'error') {
       console.log(`⚠️  ${target.name} — ${r.error}`);
       // On conserve les dispos connues, mais on note qu'on a bien re-tenté.
-      state[target.url] = { ...prev, name: target.name, status: 'error', last_error: r.error, checked: now };
+      state[target.url] = { ...prev, name: target.name, status: 'error', blocked: !!r.blocked, last_error: r.error, checked: now };
       return;
     }
 
@@ -116,10 +127,10 @@ async function checkOne(t) {
       console.log(`—  ${target.name} : ${available.length} dispo, rien de nouveau`);
     }
 
-    state[target.url] = { name: target.name, status: 'ok', cats: mergedCats, available, soldout, checked: now };
+    state[target.url] = { name: target.name, status: 'ok', cats: mergedCats, available, soldout, checked: now, last_ok: now };
   } catch (err) {
     console.error(`❌ ${target.name} — ${err.message}`);
-    state[target.url] = { ...prev, name: target.name, status: 'error', last_error: String(err.message), checked: now };
+    state[target.url] = { ...prev, name: target.name, status: 'error', blocked: false, last_error: String(err.message), checked: now };
     exitCode = 1;
   }
 }
@@ -135,6 +146,14 @@ async function runPool(items, limit, worker) {
 
 try {
   await runPool(targets, CONCURRENCY, checkOne);
+  const active = targets.filter((t) => t.enabled !== false);
+  const allBlocked = active.length > 0 && active.every((t) => state[t.url]?.blocked);
+  if (allBlocked) {
+    writeFileSync(BACKOFF_FILE, String(Date.now() + BACKOFF_MIN * 60000));
+    console.log(`⏸️  Tout est bloqué (403) → pause de ${BACKOFF_MIN} min avant le prochain essai.`);
+  } else {
+    rmSync(BACKOFF_FILE, { force: true });
+  }
   // Purge l'état des spectacles qui ne sont plus suivis.
   const tracked = new Set(targets.map((t) => t.url));
   for (const url of Object.keys(state)) if (!tracked.has(url)) delete state[url];

@@ -79,6 +79,17 @@ function deriveName(url) {
   }
 }
 
+// Une lecture est « fraîche » si la dernière lecture RÉUSSIE date de moins de 20 min.
+const READ_STALE_MIN = 20;
+const fmtWhen = (iso) => {
+  const d = new Date(iso);
+  const sameDay = d.toDateString() === new Date().toDateString();
+  return sameDay
+    ? d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    : d.toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+};
+const isFresh = (st) => !!st?.last_ok && (Date.now() - Date.parse(st.last_ok)) / 60000 < READ_STALE_MIN;
+
 function statusText() {
   const targets = readJson(TARGETS_FILE, []);
   const state = readJson(STATE_FILE, {});
@@ -91,14 +102,21 @@ function statusText() {
     out += `\n<b>${i + 1}. ${esc(t.name || t.url)}</b>${paused}\n`;
     if (!st) {
       out += '   ⏳ pas encore vérifié…\n';
-    } else {
-      const av = st.available || [];
+      return;
+    }
+    const av = st.available || [];
+    if (isFresh(st)) {
       if (av.length) out += `   🟢 <b>DISPO</b> : ${esc(av.join(', '))}\n`;
       else out += '   🔴 tout épuisé\n';
-      if (st.checked) {
-        const t2 = new Date(st.checked).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-        out += `   <i>vérifié à ${t2}</i>\n`;
-      }
+      out += `   <i>vérifié à ${fmtWhen(st.last_ok)}</i>\n`;
+    } else {
+      // Données périmées : on ne prétend PAS savoir.
+      const why = st.blocked ? 'Ticketmaster bloque le tracker (403)' : esc(st.last_error || 'erreur de lecture');
+      out += `   ⚠️ <b>Statut inconnu</b> — ${why}\n`;
+      out += st.last_ok
+        ? `   <i>dernière lecture réussie : ${fmtWhen(st.last_ok)}</i>\n`
+        : '   <i>jamais lu avec succès</i>\n';
+      out += '   👉 vérifie directement sur la page\n';
     }
   });
   return out;
@@ -157,6 +175,7 @@ async function handleAdd(chatId, arg) {
         available: baseline.available,
         soldout: baseline.soldout,
         checked: new Date().toISOString(),
+        last_ok: new Date().toISOString(),
       };
       writeFileSync(STATE_FILE, JSON.stringify(state, null, 2) + '\n');
     } catch {
@@ -216,36 +235,49 @@ async function handleUpdate(u) {
   }
 }
 
-// ── Heartbeat : alerte si la surveillance s'est arrêtée (Mac endormi/débranché/crash) ──
-const STALE_MIN = 10;
-let stalled = false;
-function newestCheck() {
-  try {
-    const s = readJson(STATE_FILE, {});
-    let max = 0;
-    for (const v of Object.values(s)) {
-      const t = Date.parse(v.checked || 0);
-      if (t > max) max = t;
-    }
-    return max;
-  } catch {
-    return 0;
-  }
-}
+// ── Heartbeat : alerte si la surveillance est arrêtée (Mac endormi) OU si des
+//    spectacles ne sont plus lisibles (blocage, page changée…). Basé sur la dernière
+//    lecture RÉUSSIE, pas sur le dernier essai — sinon une panne reste silencieuse. ──
+const AGENT_STALE_MIN = 25;
+let agentStalled = false;
+let blindKey = '';
 async function heartbeat() {
-  const max = newestCheck();
-  if (!max) return;
-  const ageMin = (Date.now() - max) / 60000;
-  if (ageMin > STALE_MIN && !stalled) {
-    stalled = true;
+  const targets = readJson(TARGETS_FILE, []).filter((t) => t.enabled !== false);
+  const state = readJson(STATE_FILE, {});
+
+  // 1) L'agent tourne-t-il encore ?
+  const lastTry = Math.max(0, ...Object.values(state).map((v) => Date.parse(v.checked || 0) || 0));
+  const tryAge = lastTry ? (Date.now() - lastTry) / 60000 : 0;
+  if (lastTry && tryAge > AGENT_STALE_MIN && !agentStalled) {
+    agentStalled = true;
     await send(
       ALLOWED,
-      `⚠️ <b>Surveillance en pause</b>\nDernière vérification il y a ${Math.round(ageMin)} min.\n` +
-        `Ton Mac est probablement endormi ou débranché → rebranche-le / garde-le ouvert pour reprendre.`
+      `⚠️ <b>Surveillance en pause</b>\nAucune vérification depuis ${Math.round(tryAge)} min.\n` +
+        'Ton Mac est probablement endormi ou débranché → rebranche-le / garde-le ouvert.'
     );
-  } else if (ageMin <= STALE_MIN && stalled) {
-    stalled = false;
-    await send(ALLOWED, '✅ <b>Surveillance reprise</b> — tout est de nouveau actif.');
+  } else if (tryAge <= AGENT_STALE_MIN && agentStalled) {
+    agentStalled = false;
+    await send(ALLOWED, '✅ <b>Surveillance reprise</b> — les vérifications ont redémarré.');
+  }
+
+  // 2) Des spectacles sont-ils « aveugles » (plus lus avec succès) ?
+  const blind = targets.filter((t) => state[t.url] && !isFresh(state[t.url]));
+  const key = blind.map((t) => t.url).sort().join('|');
+  if (key === blindKey) return;
+  const wasBlind = !!blindKey;
+  blindKey = key;
+  if (blind.length) {
+    const blocked = blind.some((t) => state[t.url]?.blocked);
+    const lines = blind.map((t) => `• ${esc(t.name)}`).join('\n');
+    await send(
+      ALLOWED,
+      `🚨 <b>Le tracker ne voit plus ces spectacles</b> (statut inconnu, ne te fie pas au « épuisé ») :\n${lines}\n\n` +
+        (blocked
+          ? 'Cause : <b>Ticketmaster bloque le tracker (erreur 403)</b>.'
+          : `Cause : ${esc(state[blind[0].url]?.last_error || 'lecture impossible')}`)
+    );
+  } else if (wasBlind) {
+    await send(ALLOWED, '✅ <b>Lecture rétablie</b> — tous tes spectacles sont de nouveau surveillés.');
   }
 }
 
